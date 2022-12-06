@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dcella-d <dcella-d@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/11/22 18:25:40 by dcella-d          #+#    #+#             */
-/*   Updated: 2022/12/06 11:18:02 by dcella-d         ###   ########.fr       */
+/*   Created: 2022/12/04 20:14:44 by dcella-d          #+#    #+#             */
+/*   Updated: 2022/12/06 11:18:44 by dcella-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,26 +19,26 @@ char	*get_next_line(int fd)
 {
 	char		*line;
 	int			posnextline;
-	static char	*keep;
+	static char	*keep[1024];
 
-	if (BUFFER_SIZE < 1 || fd < 0 || fd > FOPEN_MAX)
+	if (BUFFER_SIZE < 1 || fd < 0 || fd > 1024)
 		return (NULL);
-	if (gnl_check(keep) == 0)
-		keep = full_line(fd, keep);
-	if (!keep || keep[0] == '\0')
+	if (gnl_check(keep[fd]) == 0)
+		keep[fd] = full_line(fd, keep[fd]);
+	if (!keep[fd] || keep[fd][0] == '\0')
 	{
-		free (keep);
-		keep = NULL;
+		free (keep[fd]);
+		keep[fd] = NULL;
 		return (NULL);
 	}
-	posnextline = gnl_check(keep);
-	line = makeline(keep, posnextline);
+	posnextline = gnl_check(keep[fd]);
+	line = makeline(keep[fd], posnextline);
 	if (posnextline > 0)
-		keep = ft_strjoin(keep, keep + posnextline, -1);
+		keep[fd] = ft_strjoin(keep[fd], keep[fd] + posnextline, -1);
 	else
 	{
-		free (keep);
-		keep = NULL;
+		free (keep[fd]);
+		keep[fd] = NULL;
 	}	
 	return (line);
 }
@@ -82,38 +82,10 @@ char	*full_line(int fd, char *keep)
 			keep = NULL;
 			break ;
 		}
-		line[f] = 0;
+		if (f < BUFFER_SIZE && line[0] != '\0')
+			line[f] = 0;
 		keep = ft_strjoin(keep, line, 0);
 	}
 	free (line);
 	return (keep);
 }
-
-/* #include <fcntl.h>
-
-int	main(void)
-{
-	char *str;
-	char *str2;
-	char *str3;
-	char *str4;
-	char *str5;
-	int fd = open("fuc.txt", O_RDONLY);
-	str = get_next_line(fd);
-	str2 = get_next_line(-1);
-	str3 = get_next_line(fd);
-	str4 = get_next_line(-1);
-	str5 = get_next_line(fd);
-	printf("This is your ass: %s", str);
-	free (str);
-	printf("This is your ass: %s", str2);
-	free (str2);
-	printf("This is your ass: %s", str3);
-	free (str3);
-	printf("This is your ass: %s", str4);
-	free (str4);
-	printf("This is your ass: %s", str5);
-	free (str5);
-	close (fd);
-	return (0);
-} */
